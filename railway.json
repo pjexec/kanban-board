@@ -1,0 +1,16 @@
+{
+  "$schema": "https://railway.app/schema.json",
+  "name": "kanban-board",
+  "builder": "nixpacks",
+  "buildCommand": "cd backend && npm install",
+  "startCommand": "cd backend && npm start",
+  "env": {
+    "group": "kanban"
+  },
+  "services": [
+    {
+      "name": "web",
+      "source": "."
+    }
+  ]
+}

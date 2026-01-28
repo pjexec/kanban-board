@@ -470,141 +470,33 @@
     </div>
     
     <script>
-        // Initial tasks - Hanna & Chuck Kanban Board
-        const initialTasks = [
-            // DONE - Completed today
-            {
-                id: "task-gh-connect",
-                title: "Connect GitHub (33 repos)",
-                description: "Connected GitHub with full access to public and private repos",
-                assignee: "hanna",
-                priority: "high",
-                labels: ["setup", "github"],
-                column: "done",
-                createdAt: "2026-01-27T22:00:00Z",
-                updatedAt: "2026-01-27T22:00:00Z"
-            },
-            {
-                id: "task-ai-toolkit-feature",
-                title: "Add Recently Added feature to ai-toolkit-directory",
-                description: "Created feature branch with recently added section, quick filters, and usage tracking",
-                assignee: "hanna",
-                priority: "high",
-                labels: ["feature", "ai-toolkit"],
-                column: "done",
-                createdAt: "2026-01-27T22:25:00Z",
-                updatedAt: "2026-01-27T22:25:00Z"
-            },
-            {
-                id: "task-repo-audit",
-                title: "Full repo audit (33 repos)",
-                description: "Audited all repos, identified active vs orphaned, made recommendations",
-                assignee: "hanna",
-                priority: "high",
-                labels: ["audit", "github"],
-                column: "done",
-                createdAt: "2026-01-27T22:20:00Z",
-                updatedAt: "2026-01-27T22:20:00Z"
-            },
-            {
-                id: "task-kanban-board",
-                title: "Create Kanban board",
-                description: "Built and deployed Kanban board for task management",
-                assignee: "hanna",
-                priority: "high",
-                labels: ["feature", "tools"],
-                column: "done",
-                createdAt: "2026-01-27T23:45:00Z",
-                updatedAt: "2026-01-27T23:45:00Z"
-            },
-            // REVIEW - Awaiting Chuck's review
-            {
-                id: "task-ai-toolkit-pr",
-                title: "Review ai-toolkit-directory PR",
-                description: "Feature branch feat/clawd-recently-added needs review and merge",
-                assignee: "chuck",
-                priority: "high",
-                labels: ["pr", "review"],
-                column: "review",
-                createdAt: "2026-01-27T22:30:00Z",
-                updatedAt: "2026-01-27T22:30:00Z"
-            },
-            // IN PROGRESS - Currently working on
-            {
-                id: "task-stitchmaster",
-                title: "Improve stitchmaster app",
-                description: "Add preset templates, prompt history, and export options",
-                assignee: "hanna",
-                priority: "medium",
-                labels: ["feature", "stitchmaster"],
-                column: "inprogress",
-                createdAt: "2026-01-27T22:35:00Z",
-                updatedAt: "2026-01-27T22:35:00Z"
-            },
-            // BACKLOG - Future proactive work
-            {
-                id: "task-reengagepro",
-                title: "Explore ReEngage Pro code",
-                description: "Review reengagepro2 repository for improvement opportunities",
-                assignee: "hanna",
-                priority: "high",
-                labels: ["review", "reengagepro"],
-                column: "backlog",
-                createdAt: "2026-01-27T22:40:00Z",
-                updatedAt: "2026-01-27T22:40:00Z"
-            },
-            {
-                id: "task-daily-checkin",
-                title: "Set up daily GitHub check-in",
-                description: "Configure cron job or manual daily review of repos",
-                assignee: "hanna",
-                priority: "medium",
-                labels: ["automation", "github"],
-                column: "backlog",
-                createdAt: "2026-01-27T22:15:00Z",
-                updatedAt: "2026-01-27T22:15:00Z"
-            },
-            {
-                id: "task-browser-setup",
-                title: "Fix browser control on VPS",
-                description: "Enable browser for Twitter/web searches (blocked by AWS)",
-                assignee: "hanna",
-                priority: "low",
-                labels: ["infrastructure", "browser"],
-                column: "backlog",
-                createdAt: "2026-01-27T23:00:00Z",
-                updatedAt: "2026-01-27T23:00:00Z"
-            },
-            {
-                id: "task-kanban-enhancements",
-                title: "Add Kanban enhancements",
-                description: "Due dates, task filtering, search, and more UI improvements",
-                assignee: "hanna",
-                priority: "low",
-                labels: ["feature", "kanban"],
-                column: "backlog",
-                createdAt: "2026-01-28T00:00:00Z",
-                updatedAt: "2026-01-28T00:00:00Z"
-            }
-        ];
+        // API base URL - uses current domain
+        const API_URL = '/api';
         
-        // Task storage - use initial tasks if localStorage is empty
-        let tasks = JSON.parse(localStorage.getItem('kanban-tasks'));
-        if (!tasks || tasks.length === 0) {
-            tasks = initialTasks;
-            localStorage.setItem('kanban-tasks', JSON.stringify(tasks));
-        }
+        // Task storage
+        let tasks = [];
         let draggedTask = null;
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            renderAllTasks();
-            setupDragAndDrop();
+            loadTasks();
         });
         
-        // Save tasks
-        function saveTasks() {
-            localStorage.setItem('kanban-tasks', JSON.stringify(tasks));
+        // Load tasks from API
+        async function loadTasks() {
+            try {
+                const response = await fetch(`${API_URL}/tasks`);
+                tasks = await response.json();
+                renderAllTasks();
+            } catch (err) {
+                console.error('Failed to load tasks:', err);
+                // Fallback to localStorage if API fails
+                const localTasks = JSON.parse(localStorage.getItem('kanban-tasks'));
+                if (localTasks && localTasks.length > 0) {
+                    tasks = localTasks;
+                    renderAllTasks();
+                }
+            }
         }
         
         // Render all tasks
@@ -720,7 +612,7 @@
             this.classList.remove('drag-over');
         }
         
-        function handleDrop(e) {
+        async function handleDrop(e) {
             e.preventDefault();
             this.classList.remove('drag-over');
             
@@ -729,13 +621,23 @@
             const taskId = draggedTask.dataset.id;
             const newColumn = this.closest('.column').dataset.column;
             
-            // Update task
+            // Update task locally first for instant feedback
             const task = tasks.find(t => t.id === taskId);
             if (task && task.column !== newColumn) {
                 task.column = newColumn;
-                task.updatedAt = new Date().toISOString();
-                saveTasks();
                 renderAllTasks();
+                
+                // Update on server
+                try {
+                    await fetch(`${API_URL}/tasks/${taskId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(task)
+                    });
+                } catch (err) {
+                    console.error('Failed to update task:', err);
+                    loadTasks(); // Reload on error
+                }
             }
         }
         
@@ -774,16 +676,20 @@
             openModal(taskId);
         }
         
-        function deleteTask(taskId) {
+        async function deleteTask(taskId) {
             if (confirm('Delete this task?')) {
-                tasks = tasks.filter(t => t.id !== taskId);
-                saveTasks();
-                renderAllTasks();
+                try {
+                    await fetch(`${API_URL}/tasks/${taskId}`, { method: 'DELETE' });
+                    tasks = tasks.filter(t => t.id !== taskId);
+                    renderAllTasks();
+                } catch (err) {
+                    console.error('Failed to delete task:', err);
+                }
             }
         }
         
         // Form submission
-        document.getElementById('task-form').addEventListener('submit', (e) => {
+        document.getElementById('task-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const taskId = document.getElementById('task-id').value;
@@ -795,36 +701,46 @@
             
             if (!title) return;
             
-            if (taskId) {
-                // Update existing task
-                const task = tasks.find(t => t.id === taskId);
-                if (task) {
-                    task.title = title;
-                    task.description = description;
-                    task.assignee = assignee;
-                    task.priority = priority;
-                    task.labels = labels;
-                    task.updatedAt = new Date().toISOString();
-                }
-            } else {
-                // Create new task
-                const newTask = {
-                    id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-                    title,
-                    description,
-                    assignee,
-                    priority,
-                    labels,
-                    column: 'backlog',
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-                tasks.push(newTask);
-            }
+            const taskData = {
+                id: taskId || Date.now().toString(36) + Math.random().toString(36).substr(2),
+                title,
+                description,
+                assignee,
+                priority,
+                labels,
+                column: taskId ? tasks.find(t => t.id === taskId)?.column : 'backlog'
+            };
             
-            saveTasks();
-            renderAllTasks();
-            closeModal();
+            try {
+                if (taskId) {
+                    // Update existing task
+                    await fetch(`${API_URL}/tasks/${taskId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(taskData)
+                    });
+                    
+                    // Update local
+                    const taskIndex = tasks.findIndex(t => t.id === taskId);
+                    if (taskIndex !== -1) {
+                        tasks[taskIndex] = taskData;
+                    }
+                } else {
+                    // Create new task
+                    await fetch(`${API_URL}/tasks`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(taskData)
+                    });
+                    tasks.push(taskData);
+                }
+                
+                renderAllTasks();
+                closeModal();
+            } catch (err) {
+                console.error('Failed to save task:', err);
+                alert('Failed to save task. Please try again.');
+            }
         });
         
         // Close modal on outside click
@@ -838,6 +754,9 @@
             div.textContent = text;
             return div.innerHTML;
         }
+        
+        // Initialize drag and drop
+        setupDragAndDrop();
     </script>
 </body>
 </html>
