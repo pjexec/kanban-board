@@ -1,14 +1,10 @@
 {
   "$schema": "https://railway.app/schema.json",
   "name": "kanban-board",
-  "builder": "nixpacks",
-  "buildCommand": "cd backend && npm install",
-  "startCommand": "cd backend && node server.js",
+  "builder": "dockerfile",
+  "dockerfilePath": "Dockerfile",
   "env": {
     "group": "kanban"
-  },
-  "nixpacks": {
-    "plan": "nodejs-20"
   },
   "services": [
     {
