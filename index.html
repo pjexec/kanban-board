@@ -829,7 +829,7 @@
         
         // Close modal on outside click
         document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target === this) closeModal();
+            if (e.target.id === 'modal') closeModal();
         });
         
         // Escape HTML
