@@ -470,8 +470,130 @@
     </div>
     
     <script>
-        // Task storage
-        let tasks = JSON.parse(localStorage.getItem('kanban-tasks')) || [];
+        // Initial tasks - Hanna & Chuck Kanban Board
+        const initialTasks = [
+            // DONE - Completed today
+            {
+                id: "task-gh-connect",
+                title: "Connect GitHub (33 repos)",
+                description: "Connected GitHub with full access to public and private repos",
+                assignee: "hanna",
+                priority: "high",
+                labels: ["setup", "github"],
+                column: "done",
+                createdAt: "2026-01-27T22:00:00Z",
+                updatedAt: "2026-01-27T22:00:00Z"
+            },
+            {
+                id: "task-ai-toolkit-feature",
+                title: "Add Recently Added feature to ai-toolkit-directory",
+                description: "Created feature branch with recently added section, quick filters, and usage tracking",
+                assignee: "hanna",
+                priority: "high",
+                labels: ["feature", "ai-toolkit"],
+                column: "done",
+                createdAt: "2026-01-27T22:25:00Z",
+                updatedAt: "2026-01-27T22:25:00Z"
+            },
+            {
+                id: "task-repo-audit",
+                title: "Full repo audit (33 repos)",
+                description: "Audited all repos, identified active vs orphaned, made recommendations",
+                assignee: "hanna",
+                priority: "high",
+                labels: ["audit", "github"],
+                column: "done",
+                createdAt: "2026-01-27T22:20:00Z",
+                updatedAt: "2026-01-27T22:20:00Z"
+            },
+            {
+                id: "task-kanban-board",
+                title: "Create Kanban board",
+                description: "Built and deployed Kanban board for task management",
+                assignee: "hanna",
+                priority: "high",
+                labels: ["feature", "tools"],
+                column: "done",
+                createdAt: "2026-01-27T23:45:00Z",
+                updatedAt: "2026-01-27T23:45:00Z"
+            },
+            // REVIEW - Awaiting Chuck's review
+            {
+                id: "task-ai-toolkit-pr",
+                title: "Review ai-toolkit-directory PR",
+                description: "Feature branch feat/clawd-recently-added needs review and merge",
+                assignee: "chuck",
+                priority: "high",
+                labels: ["pr", "review"],
+                column: "review",
+                createdAt: "2026-01-27T22:30:00Z",
+                updatedAt: "2026-01-27T22:30:00Z"
+            },
+            // IN PROGRESS - Currently working on
+            {
+                id: "task-stitchmaster",
+                title: "Improve stitchmaster app",
+                description: "Add preset templates, prompt history, and export options",
+                assignee: "hanna",
+                priority: "medium",
+                labels: ["feature", "stitchmaster"],
+                column: "inprogress",
+                createdAt: "2026-01-27T22:35:00Z",
+                updatedAt: "2026-01-27T22:35:00Z"
+            },
+            // BACKLOG - Future proactive work
+            {
+                id: "task-reengagepro",
+                title: "Explore ReEngage Pro code",
+                description: "Review reengagepro2 repository for improvement opportunities",
+                assignee: "hanna",
+                priority: "high",
+                labels: ["review", "reengagepro"],
+                column: "backlog",
+                createdAt: "2026-01-27T22:40:00Z",
+                updatedAt: "2026-01-27T22:40:00Z"
+            },
+            {
+                id: "task-daily-checkin",
+                title: "Set up daily GitHub check-in",
+                description: "Configure cron job or manual daily review of repos",
+                assignee: "hanna",
+                priority: "medium",
+                labels: ["automation", "github"],
+                column: "backlog",
+                createdAt: "2026-01-27T22:15:00Z",
+                updatedAt: "2026-01-27T22:15:00Z"
+            },
+            {
+                id: "task-browser-setup",
+                title: "Fix browser control on VPS",
+                description: "Enable browser for Twitter/web searches (blocked by AWS)",
+                assignee: "hanna",
+                priority: "low",
+                labels: ["infrastructure", "browser"],
+                column: "backlog",
+                createdAt: "2026-01-27T23:00:00Z",
+                updatedAt: "2026-01-27T23:00:00Z"
+            },
+            {
+                id: "task-kanban-enhancements",
+                title: "Add Kanban enhancements",
+                description: "Due dates, task filtering, search, and more UI improvements",
+                assignee: "hanna",
+                priority: "low",
+                labels: ["feature", "kanban"],
+                column: "backlog",
+                createdAt: "2026-01-28T00:00:00Z",
+                updatedAt: "2026-01-28T00:00:00Z"
+            }
+        ];
+        
+        // Task storage - use initial tasks if localStorage is empty
+        let tasks = JSON.parse(localStorage.getItem('kanban-tasks'));
+        if (!tasks || tasks.length === 0) {
+            tasks = initialTasks;
+            localStorage.setItem('kanban-tasks', JSON.stringify(tasks));
+        }
         let draggedTask = null;
         
         // Initialize
