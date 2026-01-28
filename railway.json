@@ -3,9 +3,12 @@
   "name": "kanban-board",
   "builder": "nixpacks",
   "buildCommand": "cd backend && npm install",
-  "startCommand": "cd backend && npm start",
+  "startCommand": "cd backend && node server.js",
   "env": {
     "group": "kanban"
+  },
+  "nixpacks": {
+    "plan": "nodejs-20"
   },
   "services": [
     {
